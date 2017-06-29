@@ -1,0 +1,256 @@
+<body>
+
+  <head>
+    <title>FFMPEG Fade Text In and Out</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="css/spectrum.css" type="text/css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="js/spectrum.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" />
+    <style>
+
+    </style>
+    <script>
+      $(document).ready(function() {
+        var displayTextArray = [];
+        var textColor = "ffffff";
+        $("#color-picker").spectrum({
+          color: "ffffff",
+          change: function(color) {
+            textColor = color.toHexString().substr(1);
+          }
+        });
+        $("#reset-fields").click(function() {
+          $("#text").val("");
+          $("#font-size").val("64");
+          $("#text-x-location").val("(w-text_w)/2");
+          $("#text-y-location").val("(h-text_h)/2");
+
+          $("#fade-in-start-time").val("");
+          $("#fade-in-duration").val("");
+          $("#text-display-time").val("");
+          $("#fade-out-duration").val("");
+        });
+
+        $("#add-text").click(function() {
+
+          var inputFile = $("#input-file-name").val();
+          var outputFile = $("#output-file-name").val();
+
+          if (inputFile == "" || outputFile == "")
+          {
+            alert("Please enter input and outputfiles");
+          } else
+          {
+            var commandBegin = 'ffmpeg -i ' + inputFile + ' -filter_complex "[0:v]';
+            var commandEnd = '" ' + outputFile;
+
+            var text = $("#text").val();
+            var fontSize = $("#font-size").val();
+            var fontFileLocation = $("#font-file").val();
+            var textX = $("#text-x-location").val();
+            var textY = $("#text-y-location").val();
+
+            var t1 = parseFloat($("#fade-in-start-time").val());
+            var t2 = parseFloat($("#fade-in-duration").val());
+            var t3 = parseFloat($("#text-display-time").val());
+            var t4 = parseFloat($("#fade-out-duration").val());
+
+            var fadeOutTime = t1+t2+t3;
+            console.log(fadeOutTime);
+            var alphaText = "alpha='if(lt(t," + t1 + "),0,if(lt(t," + (t1 + t2) + "),(t-" + t1 + ")/" + t2 + ",if(lt(t," + (t1 + t2 + t3) + "),1,if(lt(t," + (t1 + t2 + t3 + t4) + "),(" + t4 + "-(t-" + fadeOutTime + "))/" + t4 +
+              ",0))))'";
+            var displayText = "drawtext=fontfile=" + fontFileLocation + ":text='" + text + "':fontsize=" + fontSize + ":fontcolor=" + textColor + ":" + alphaText + ":x=" + textX + ":y=" + textY;
+            displayTextArray.push(displayText);
+            var outputDisplayText = "";
+
+            $.each(displayTextArray, function(index, value)
+            {
+              if (index != 0)
+              {
+                outputDisplayText = outputDisplayText + "," + value;
+              } else
+              {
+                outputDisplayText = value;
+              }
+            });
+            $("#output").text(commandBegin + outputDisplayText + commandEnd);
+          }
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <h1>Generate FFMPEG Text Fade In/Out Effects</h1>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">File Info</h3>
+            </div>
+            <div class="panel-body">
+              <div class="form-group ">
+                <label class="control-label " for="input-file-name">
+                  Input File Name
+                </label>
+                <div class="input-group">
+                  <div class="input-group-addon">
+                    <i class="fa fa-file-video-o"></i>
+                  </div>
+                  <input class="form-control" id="input-file-name" name="input-file-name" placeholder="Enter Input File Name" type="text" />
+                </div>
+              </div>
+              <div class="form-group ">
+                <label class="control-label " for="output-file-name">
+                  Output File name
+                </label>
+                <div class="input-group">
+                  <div class="input-group-addon">
+                    <i class="fa fa-file-video-o"></i>
+                  </div>
+                  <input class="form-control" id="output-file-name" name="output-file-name" placeholder="Enter Output File Name" type="text" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-9">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title">Text Info</h3>
+            </div>
+            <div class="panel-body">
+              <div class="col-md-6 form-line">
+                <h2>Text Properties</h2>
+                <div class="form-group ">
+                  <label class="control-label " for="text">
+                  Text
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-font"></i>
+                    </div>
+                    <input class="form-control" id="text" name="Text" placeholder="Enter Desired Text" type="text" />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="font-size">
+                  Font Size
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-font"></i>
+                    </div>
+                    <input class="form-control" id="font-size" name="font-size" placeholder="Enter Font Size" type="text" />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="font-file">
+                  Font File
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-font"></i>
+                    </div>
+                    <input class="form-control" id="font-file" name="font-file" value="Lato-Light.ttf" placeholder="Enter Font File and Location" type="text" />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="font-color">
+                    Font Color
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-paint-brush"></i>
+                    </div>
+                    <input type="text" id="color-picker" / />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="text-x-location">
+                    Text X Location (Leave as is for centered text)
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-times"></i>
+                    </div>
+                    <input class="form-control" id="text-x-location" name="text-x-location" value="(w-text_w)/2" type="text" />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="text-y-location">
+                  Text Y Location (Leave as is for centered text)
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-yahoo"></i>
+                    </div>
+                    <input class="form-control" id="text-y-location" name="text-y-location" value="(h-text_h)/2" type="text" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6 form-line">
+                <h2>Animation</h2>
+                <div class="form-group ">
+                  <label class="control-label " for="fade-in-start-time">
+                  Fade In Start Time(In Seconds)
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-clock-o"></i>
+                    </div>
+                    <input class="form-control" id="fade-in-start-time" name="fade-in-start-time" placeholder="Enter Fade In Time" type="text" />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="fade-in-duration">
+                  Fade In Duration(In seconds)
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-clock-o"></i>
+                    </div>
+                    <input class="form-control" id="fade-in-duration" name="fade-in-duration" placeholder="Enter Fade In Duration" type="text" />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="text-display-time">
+                  Time for text to be displayed(In seconds)
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-clock-o"></i>
+                    </div>
+                    <input class="form-control" id="text-display-time" name="text-display-time" placeholder="Enter Text Display Time" type="text" />
+                  </div>
+                </div>
+                <div class="form-group ">
+                  <label class="control-label " for="fade-out-duration">
+                  Fade Out Duration(In seconds)
+                </label>
+                  <div class="input-group">
+                    <div class="input-group-addon">
+                      <i class="fa fa-clock-o"></i>
+                    </div>
+                    <input class="form-control" id="fade-out-duration" name="fade-out-duration" placeholder="Enter Fade Out Duration" type="text" />
+                  </div>
+                </div>
+                <button class="btn btn-info" id="add-text">Add Text to Command</button>
+                <button class="btn btn-warning" id="reset-fields">Reset Fields</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Output</h2>
+      <p id="output"></p>
+    </div>
+  </body>
